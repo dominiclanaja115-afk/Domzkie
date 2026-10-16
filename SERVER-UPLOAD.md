@@ -30,14 +30,15 @@ included. It starts with an empty community. There are no runtime npm dependenci
    It should return `{"app":"ph.ugnay.app","status":"ok"}`.
 6. Open your HTTPS address, sign up, and save the private recovery code. Try posting
    and messaging between two accounts. Restart the server and confirm data remains.
-7. Send me the HTTPS URL. I will verify it and embed it in the final APK.
+7. The supplied live URL, https://domzkie.onrender.com/, is now embedded in the final
+   `UgnayPH.apk`. Users install it and proceed directly to Login/Signup.
 
 Use encrypted disks/backups provided by your host. SQLite itself does not encrypt
 its database file. See DEPLOYMENT.md for caching/security details and the existing
 feature limits in README.md. Recovery uses a saved recovery code; email/SMS delivery
 and background push notifications are not provided in this release.
 
-## Pending-URL APK
+## Historical pending-URL APK
 
 `UgnayPH-Pending-URL.apk` installs on Android 8.0+. It has **no server address field**.
 It shows a coming-soon page and the developer credit. Sign-in, posts and messaging

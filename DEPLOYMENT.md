@@ -5,10 +5,10 @@ Copyright © 2026. All Rights Reserved.
 
 ## Current state
 
-The client no longer offers a server-address form or a change-server menu. A release
-build requires a live, verified HTTPS UgnayPH 1.1 backend. The user will deploy the supplied server and send the live HTTPS URL. The
-requested pending-URL APK can be installed before that final build. The previous
-1.0 APK in Outputs is not the updated online release.
+The final APK embeds **https://domzkie.onrender.com/** from `android/server.json`.
+It opens Login/Signup without any address-entry step and keeps the creator credit
+visible. Version 1.1/code 4 replaces the earlier pending-URL preview. Live health and
+configuration checks passed; the backend reports version 1.1 with demo mode off.
 
 ## One-time operator deployment (never an app-user step)
 
@@ -27,16 +27,15 @@ keep the development SQLite file and synthetic demo accounts out of deployment.
 1. Deploy the server and record its actual HTTPS URL.
 2. Verify health, signup, login, posting, friends-only access, and messaging between
    two separate accounts/devices. Restart the server and verify data persisted.
-3. Embed the verified URL at build time:
+3. Build with the committed live URL (or override `UGNAY_SERVER_URL` for a new host):
 
 ```bash
-export UGNAY_SERVER_URL=https://YOUR_ACTUAL_DEPLOYED_HOST
 export JAVA_HOME=/path/to/jdk17
 export ANDROID_HOME=/path/to/android-sdk
 bash scripts/build-apk.sh
 ```
 
-The example host is not a usable server. The script rejects missing/invalid origins
+The script reads the committed server address and rejects missing/invalid origins
 and checks `/healthz` and `/api/config` over TLS, refusing demo or incompatible servers.
 These public checks are a build gate; they do not replace the two-account/persistence
 checks above. No URL is requested from app users. Existing 1.0 server preferences are
@@ -66,12 +65,13 @@ release, must not be distributed, and does not overwrite the last installable re
 
 ## Remaining release verification
 
-Hosting access, a real HTTPS URL, encrypted persistent storage/backup configuration,
-restart persistence, cross-device communication and final APK network verification
-must be completed before publishing version 1.1. All previous social features are
-retained; the existing moderation/push/email-delivery limitations still apply.
+The live HTTPS URL and final signed APK are available. Host disk encryption,
+backups, restart persistence and communication across separate physical phones
+remain operator checks. Health/configuration checks do not establish these.
+All previous social features are retained; the existing moderation/push/email-delivery
+limitations still apply. See TESTING.md for observed client verification.
 
-## Requested preview before deployment
+## Historical preview before deployment
 
 The developer can build an installable preview with `UGNAY_PENDING_URL=1 bash
 scripts/build-apk.sh` (with JAVA_HOME and ANDROID_HOME configured). It produces

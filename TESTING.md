@@ -3,14 +3,29 @@
 Created by: Dominic R. Lanaja  
 Copyright © 2026. All Rights Reserved.
 
-## Version 1.1 online update
+## Version 1.1 final live-URL build
 
-- `npm test`: 19 tests passed, including all original social workflows, encrypted cache isolation/tamper/expiry/limits, authenticated ETag reuse, and live-server build gates.
-- `npm run check` and `git diff --check`: passed.
-- Chromium: sign-in, persistent developer credit, AES cache key marked non-exportable, repeated feed requests returned 304, and logout left zero local cache records.
-- Android source compiles with API 26 minimum and valid APK signatures in compilation-only mode. This uses a deliberately invalid host and is not a releasable APK.
-- Missing deployment URL is rejected by the release build gate. No actual HTTPS backend has been deployed.
-- Container image builds; container health/signup passed and the account remained available after a restart using a persistent volume. The first smoke attempt ran before readiness and failed; retrying after a bounded health wait passed. Public hosting, final URL embedding and the updated APK network/device flows remain blocked pending hosting access.
+- Live HTTPS `/healthz` and `/api/config` returned HTTP 200 with UgnayPH identity,
+  version 1.1 and demo mode off. The final APK embeds `https://domzkie.onrender.com/`.
+- Three deployment tests passed after adding the committed default URL. The earlier
+  19-test pass for social workflows, encrypted cache isolation/tamper/expiry/limits,
+  authenticated ETag reuse and deployment gates is reused for unchanged server/cache code.
+- `npm run check` and `git diff --check` passed.
+- The signed APK builds with JDK 17/SDK 35/build tools 35.0.0, version 1.1/code 4,
+  minimum API 26 and target API 35. APK v2/v3 signatures verify and its signing
+  certificate matches the previous builds, permitting installation as an update.
+- Shared Chromium opened the actual live URL directly to Login, then Signup, with
+  developer credit visible and no server-address field. No page errors were recorded.
+  Mobile 390×844 login was visually inspected. No live accounts were created.
+- API 26 emulator installation passed. Its default system image has no WebView
+  provider, so opening the online client failed in that image. A Google APIs API 35
+  image was installed, but software boot did not complete within the bounded
+  approximately seven-minute attempt. It was stopped. Final APK network startup
+  on Android remains unverified; the live web interface was verified separately.
+- Earlier local Chromium checks passed: sign-in, persistent credit, non-exportable
+  AES cache key, 304 reuse and empty local cache after logout. Earlier container
+  health/signup and account persistence after restart passed on a persistent volume.
+  These are local checks, not proof of the Render host's disk/backups configuration.
 
 ## Version 1.0 historical verification
 
@@ -21,21 +36,17 @@ Copyright © 2026. All Rights Reserved.
 
 ## Not yet established
 
-- A hosted public HTTPS server, APK-to-server end-to-end flow, and operation across separate physical phones.
+- Communication across separate physical phones and production restart persistence,
+  encrypted disk and backup configuration on the user's host.
 - Measured startup time or performance on an entry-level Android device.
-- Background push notifications, production moderation and email/SMS verification are not implemented.
+- Physical-device microphone recording and attachment downloads.
+- Background push notifications, production moderation and email/SMS verification
+  are not implemented; see README.md for the existing feature limits.
 
-The existing 1.0 APK is unchanged. An installable version 1.1 pending-URL preview
-(code 3) is now supplied; it shows a native coming-soon page. The signed APK build
-and deployment-mode tests passed. The complete extracted server upload was smoke
-tested for startup, health, all web assets, two-account signup and messaging.
-The final connected version still requires the user’s live HTTPS URL. Read DEPLOYMENT.md for hosting, local caching, and remaining release gates.
+## Historical pending-URL handoff
 
-## Pending-URL handoff
-
-The pending-URL build mode has three passing deployment tests (origin checks,
-live-backend gate, and pending configuration/release-mode separation). The signed
-APK uses the same certificate as version 1.0, supports Android 8.0+, and contains
-no endpoint in pending mode. Server code is unchanged from the earlier 19-test
-validation; an extracted upload archive additionally passed a fresh process
-startup, all web asset requests, signup and message delivery between two accounts.
+The earlier version 1.1/code 3 preview showed a native coming-soon page and no
+server-address form. Its build/signature/install/runtime checks passed. The extracted
+server archive passed startup, all web asset requests, signup and messaging between
+two synthetic accounts. The final `UgnayPH.apk` replaces that waiting preview.
+Read DEPLOYMENT.md for hosting and caching details.

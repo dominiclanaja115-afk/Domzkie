@@ -3,18 +3,17 @@
 **Created by: Dominic R. Lanaja**  
 **Copyright © 2026. All Rights Reserved.**
 
-Version 1.1 (online update, deployment pending) — Your Filipino Home Online. For Every Filipino, Everywhere.
+Version 1.1 (online release) — Your Filipino Home Online. For Every Filipino, Everywhere.
 
 A lightweight social application with an original Filipino visual identity, a Node.js/SQLite server, a responsive browser client, and an Android 8.0+ HTTPS client. No Facebook code, assets, or icon library is used.
 
 ## Delivery status
 
-Version 1.1 source removes manual server setup and adds encrypted local response caching.
-**The final online build is waiting for your deployed HTTPS URL.** The requested
-`UgnayPH-Pending-URL.apk` is installable and shows a coming-soon page with no URL
-entry. It requires a new final APK after deployment. No live URL is embedded. The previous 1.0 APK is not the updated online release.
-See [DEPLOYMENT.md](DEPLOYMENT.md) for the one-time operator steps and release gates.
-App users will only install, sign up/sign in, and use the service; they never enter URLs.
+The final `UgnayPH.apk` connects automatically to **https://domzkie.onrender.com/**.
+The URL is committed in `android/server.json` and embedded during the build.
+Login/Signup opens directly; there is no server-address form or server-switch menu.
+The creator credit remains visible. This replaces the earlier pending-URL preview.
+See [DEPLOYMENT.md](DEPLOYMENT.md) for hosting requirements and verification limits.
 
 ## Start the web app / server
 
@@ -59,7 +58,7 @@ Caddy manages HTTPS certificates. Ensure its request body allowance is at least 
 
 The server does not trust forwarded IP headers. Its basic request rate limit therefore groups requests behind a proxy by socket address; tune this and add proxy-level rate controls before scaling beyond a small community. SQLite and synchronous password hashing suit an initial small deployment, not a large public network.
 
-## Install UgnayPH.apk (after the online release is published)
+## Install UgnayPH.apk
 
 1. Install the signed APK on Android 8.0 (API 26) or later, allowing installation from
    your file manager only when prompted.
@@ -68,8 +67,8 @@ The server does not trust forwarded IP headers. Its basic request rate limit the
 
 Keep Android System WebView updated. The top-right menu provides Reload and About;
 there is no server-address form or server-switch menu. The developer credit stays visible.
-HTTPS certificate errors are never bypassed. Hosting must be completed before this
-version can be released; the older 1.0 APK still has its original server-entry screen.
+HTTPS certificate errors are never bypassed. Install the final APK over the earlier
+waiting build; do not use the historical 1.0 APK.
 
 ## Build the APK
 
@@ -78,11 +77,10 @@ Requirements: JDK 17, Android SDK platform 35, build tools 35.0.0, `zip`. The na
 ```bash
 export JAVA_HOME=/path/to/jdk-17
 export ANDROID_HOME=/path/to/android-sdk
-export UGNAY_SERVER_URL=https://YOUR_ACTUAL_DEPLOYED_HOST
 bash scripts/build-apk.sh
 ```
 
-Output: `build/UgnayPH.apk`, package `ph.ugnay.app`, version name `1.1`, version code `3`, min SDK `26`, target SDK `35`. The script verifies the live backend before compiling, aligns the APK and verifies its v2/v3 signature. A missing URL blocks release builds; see DEPLOYMENT.md for compilation-only checks.
+Output: `build/UgnayPH.apk`, package `ph.ugnay.app`, version name `1.1`, version code `4`, min SDK `26`, target SDK `35`. The script verifies the live backend before compiling, aligns the APK and verifies its v2/v3 signature. The default URL comes from `android/server.json`; `UGNAY_SERVER_URL` may override it for an operator rebuild. Invalid URLs or failed live checks block release builds; see DEPLOYMENT.md for compilation-only checks.
 
 By default, a development key is created at `$HOME/.ugnayph/signing.jks`, alias `ugnayph`, using a development password. For your own release, create a private key and set `UGNAY_KEYSTORE` and `UGNAY_STOREPASS` through a secure local environment. Do not commit or distribute private keys. The delivered APK's task-local development key is not in the source archive; a locally rebuilt APK with a different key cannot install over it.
 

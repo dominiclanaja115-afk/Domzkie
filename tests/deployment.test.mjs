@@ -53,7 +53,7 @@ test('pending preview generates no endpoint and ordinary builds still require a 
   const script = new URL('../scripts/verify-server.mjs', import.meta.url);
   const cwd = mkdtempSync(join(tmpdir(), 'ugnay-pending-'));
   const env = { ...process.env };
-  delete env.UGNAY_SERVER_URL;
+  env.UGNAY_SERVER_URL = ''; // Explicit empty override tests a missing release origin.
   delete env.UGNAY_BUILD_CHECK_ONLY;
   delete env.UGNAY_PENDING_URL;
   try {

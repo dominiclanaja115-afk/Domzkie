@@ -1,7 +1,7 @@
 /* UgnayPH — Pinoy Social Media App
  * Created by: Dominic R. Lanaja
  * Copyright © 2026. All Rights Reserved. */
-import { writeFileSync, mkdirSync } from 'node:fs';
+import { writeFileSync, mkdirSync, readFileSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
 export function serverOrigin(value) {
   if (!value) throw Error('UGNAY_SERVER_URL must be the deployed public HTTPS origin.');
@@ -45,14 +45,20 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   if (pending && checkOnly) throw Error('Select either pending-URL or compilation-check mode.');
   const origin = pending
     ? ''
-    : serverOrigin(checkOnly ? 'https://build-check.invalid' : process.env.UGNAY_SERVER_URL);
+    : serverOrigin(
+        checkOnly
+          ? 'https://build-check.invalid'
+          : (process.env.UGNAY_SERVER_URL ??
+              JSON.parse(readFileSync(new URL('../android/server.json', import.meta.url), 'utf8'))
+                .url)
+      );
   if (!checkOnly && !pending) await verifyServer(origin);
   mkdirSync('build/gen/ph/ugnay', { recursive: true });
   writeFileSync(
     'build/gen/ph/ugnay/ServerConfig.java',
     '// UgnayPH — Created by: Dominic R. Lanaja. Copyright © 2026. All Rights Reserved.\n' +
       'package ph.ugnay; public final class ServerConfig { public static final String ORIGIN = ' +
-      JSON.stringify(origin) +
+      JSON.stringify(origin ? origin + '/' : '') +
       '; }\n'
   );
   console.log(
