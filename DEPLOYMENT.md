@@ -45,6 +45,37 @@ ignored. Use the same signing key to install this version over 1.0.
 against an unresolvable `.invalid` origin for compiler verification only. It is not a
 release, must not be distributed, and does not overwrite the last installable release.
 
+## Render origins and CORS
+
+Render's `RENDER_EXTERNAL_URL` is accepted automatically, including when TLS ends
+at Render's proxy. For this deployment set `PUBLIC_ORIGIN=https://domzkie.onrender.com`
+and keep `SECURE_COOKIES=1`. A trailing slash in an origin setting is normalized.
+Do not use `*`. The Android app loads this same HTTPS origin and needs no APK update
+for a server origin fix.
+
+For additional trusted browser clients, set `CORS_ORIGINS` to a comma-separated
+list of HTTP(S) origins. Allowed API requests receive the exact origin,
+`Access-Control-Allow-Credentials: true`, and `Vary: Origin`. OPTIONS preflights
+support GET/POST/PATCH/DELETE with Content-Type/If-None-Match headers. Unknown
+origins, including `null`, are rejected. Proxy-provided host/protocol headers do
+not grant origin access. With no configured origins, local development uses the
+request's own host and socket protocol. Session cookies retain SameSite=Strict.
+
+Deploy this repository's `coderabbit/build-ugnayph-social-app/6a81962c` branch in
+Render. Enable automatic deploys or choose **Manual Deploy → Deploy latest commit**
+after pulling the fix. Keep the existing persistent disk and DATA_DIR. Confirm the
+deploy is Live, then reopen the existing APK and retry signup. Verify without
+creating a real account:
+
+```bash
+curl -i https://domzkie.onrender.com/api/signup \
+  -H 'Origin: https://domzkie.onrender.com' \
+  -H 'Content-Type: application/json' --data '{}'
+```
+
+Expected: HTTP 400 with a missing-account-details message, not HTTP 403
+`Origin not allowed`. This intentionally empty request creates no account.
+
 ## Local caching and security
 
 - Recent feed, profile, connection, notification and conversation JSON is encrypted

@@ -152,6 +152,58 @@ function session(res, uid, remember) {
     `ugnay=${token}; HttpOnly; SameSite=Strict; Path=/${remember ? '; Max-Age=2592000' : ''}${process.env.SECURE_COOKIES === '1' ? '; Secure' : ''}`
   );
 }
+// Render terminates TLS before Node; use its external URL instead of proxy headers.
+const configuredOrigins = [
+  process.env.PUBLIC_ORIGIN,
+  process.env.RENDER_EXTERNAL_URL,
+  ...(process.env.CORS_ORIGINS || '').split(',')
+]
+  .filter((value) => value?.trim())
+  .map((value) => {
+    const url = new URL(value.trim());
+    if (
+      !['http:', 'https:'].includes(url.protocol) ||
+      url.username ||
+      url.password ||
+      url.pathname !== '/' ||
+      url.search ||
+      url.hash
+    )
+      throw Error(
+        'Configure PUBLIC_ORIGIN, RENDER_EXTERNAL_URL and CORS_ORIGINS as HTTP(S) origins.'
+      );
+    return url.origin;
+  });
+const corsMethods = ['GET', 'POST', 'PATCH', 'DELETE'];
+const corsHeaders = ['content-type', 'if-none-match'];
+function cors(req, res) {
+  res.setHeader('Vary', 'Origin');
+  const origin = req.headers.origin;
+  if (origin) {
+    const allowed = configuredOrigins.length
+      ? configuredOrigins
+      : [`${req.socket.encrypted ? 'https' : 'http'}://${req.headers.host}`];
+    if (!allowed.includes(origin)) fail('Origin not allowed', 403);
+    res.setHeader('Access-Control-Allow-Origin', origin);
+    res.setHeader('Access-Control-Allow-Credentials', 'true');
+    res.setHeader('Access-Control-Expose-Headers', 'ETag');
+  }
+  if (req.method !== 'OPTIONS') return false;
+  if (!origin) fail('Origin required for preflight', 400);
+  if (!corsMethods.includes(req.headers['access-control-request-method']))
+    fail('Method not allowed', 405);
+  const headers = (req.headers['access-control-request-headers'] || '')
+    .split(',')
+    .map((value) => value.trim().toLowerCase())
+    .filter(Boolean);
+  if (headers.some((header) => !corsHeaders.includes(header))) fail('Headers not allowed', 403);
+  res.setHeader('Access-Control-Allow-Methods', corsMethods.join(', '));
+  res.setHeader('Access-Control-Allow-Headers', corsHeaders.join(', '));
+  res.setHeader('Access-Control-Max-Age', '600');
+  res.writeHead(204);
+  res.end();
+  return true;
+}
 async function api(req, res, url) {
   const path = url.pathname.slice(4),
     method = req.method;
@@ -163,11 +215,6 @@ async function api(req, res, url) {
         now()
       )
     : null;
-  if (method !== 'GET') {
-    const origin = req.headers.origin;
-    if (origin && origin !== `${process.env.PUBLIC_ORIGIN || `http://${req.headers.host}`}`)
-      fail('Origin not allowed', 403);
-  }
   limit(req.socket.remoteAddress + ':' + (auth?.id || 'guest'), auth ? 240 : 50);
   if (path === '/config')
     return { app: 'ph.ugnay.app', demo: process.env.DEMO === '1', version: '1.1' };
@@ -635,6 +682,7 @@ export const server = http.createServer(async (req, res) => {
     }
     if (url.pathname.startsWith('/api/')) {
       res.setHeader('Cache-Control', 'no-store');
+      if (cors(req, res)) return;
       const result = await api(req, res, url);
       if (!res.writableEnded) {
         const payload = JSON.stringify(result);

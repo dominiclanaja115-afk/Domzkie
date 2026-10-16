@@ -16,13 +16,13 @@ included. It starts with an empty community. There are no runtime npm dependenci
    UID 1000. For a Node host, use its assigned persistent directory as `DATA_DIR`.
 3. Set these environment variables in the hosting dashboard:
 
-   | Variable         | Value                                               |
-   | ---------------- | --------------------------------------------------- |
-   | `PUBLIC_ORIGIN`  | Your actual HTTPS address, without a trailing slash |
-   | `SECURE_COOKIES` | `1`                                                 |
-   | `DATA_DIR`       | Your persistent directory, e.g. `/var/lib/ugnayph`  |
-   | `NODE_ENV`       | `production`                                        |
-   | `PORT`           | The port assigned by your host; default `3000`      |
+   | Variable         | Value                                              |
+   | ---------------- | -------------------------------------------------- |
+   | `PUBLIC_ORIGIN`  | `https://domzkie.onrender.com`                     |
+   | `SECURE_COOKIES` | `1`                                                |
+   | `DATA_DIR`       | Your persistent directory, e.g. `/var/lib/ugnayph` |
+   | `NODE_ENV`       | `production`                                       |
+   | `PORT`           | The port assigned by your host; default `3000`     |
 
 4. Start command: `npm start`. An install command is not required for runtime; if
    your host requires one, use `npm ci --omit=dev`. Keep `DEMO` unset.
@@ -45,3 +45,12 @@ It shows a coming-soon page and the developer credit. Sign-in, posts and messagi
 become available in a new APK after your live URL is embedded; the pending APK does
 not discover a URL or activate remotely. Install the final build over this one using
 the same signing key. Keep the private signing key out of the server upload.
+
+## Origin-error server update
+
+Deploy the updated `app/services/server.mjs` and restart the service. It accepts
+Render's automatic external URL and normalizes a trailing slash in PUBLIC_ORIGIN.
+The existing APK is compatible. For Git deployments use the repository's
+`coderabbit/build-ugnayph-social-app/6a81962c` branch and Render's **Deploy latest
+commit** action if automatic deploys are off. Keep the existing persistent data.
+See DEPLOYMENT.md for the non-mutating verification command and optional CORS_ORIGINS.

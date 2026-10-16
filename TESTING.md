@@ -3,6 +3,19 @@
 Created by: Dominic R. Lanaja  
 Copyright © 2026. All Rights Reserved.
 
+## Render origin fix
+
+- Reproduced HTTP 403 `Origin not allowed` on the public server using an empty
+  signup request with Origin `https://domzkie.onrender.com` (no account created).
+- `node --test tests/social.test.mjs tests/cors.test.mjs`: 17 tests passed. Coverage
+  includes Render HTTPS signup/session through an HTTP socket, trailing-slash
+  normalization, trusted preflights, untrusted/opaque/spoofed-origin rejection,
+  error CORS headers and the existing social/privacy/conditional-cache workflows.
+- `npm run check` and `git diff --check` passed. Client/cache/build code is unchanged;
+  prior APK build and cache-specific tests remain applicable.
+- Local results do not establish deployment status. After Render deploys the fixed
+  server, use DEPLOYMENT.md's empty signup request to confirm the live origin check.
+
 ## Version 1.1 final live-URL build
 
 - Live HTTPS `/healthz` and `/api/config` returned HTTP 200 with UgnayPH identity,
