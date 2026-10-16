@@ -1,0 +1,19 @@
+{
+  "name": "ugnayph",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=24"
+  },
+  "scripts": {
+    "start": "node app/services/server.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "demo": "node scripts/seed.mjs",
+    "format": "prettier --write app scripts/*.mjs tests/*.mjs README.md package.json",
+    "check": "prettier --check app scripts/*.mjs tests/*.mjs README.md package.json"
+  },
+  "devDependencies": {
+    "prettier": "3.6.2"
+  }
+}
