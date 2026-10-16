@@ -217,3 +217,34 @@ test('cursor pagination and following filters do not duplicate or leak posts', a
   await bob('/follow', 'POST', { target: cid, follow: false });
   assert.equal((await bob('/posts?mode=following&section=kultura')).posts.length, 0);
 });
+
+test('conditional cache responses require fresh authentication and current audience access', async () => {
+  const login = await fetch(base + '/api/login', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ identity: 'bob@example.test', password: 'StrongPassword123!' })
+  });
+  assert.equal(login.status, 200);
+  const cookie = login.headers.get('set-cookie').split(';')[0];
+  await bob('/friends', 'POST', { target: cid, action: 'request' });
+  await carla('/friends', 'POST', { target: bid, action: 'accept' });
+  const post = await carla('/posts', 'POST', {
+    body: 'Cached friends post',
+    audience: 'friends',
+    section: 'bayan'
+  });
+  const path = base + '/api/posts/' + post.id + '/comments';
+  const fresh = await fetch(path, { headers: { cookie } });
+  assert.equal(fresh.status, 200);
+  const etag = fresh.headers.get('etag');
+  assert.ok(etag);
+  const cached = await fetch(path, { headers: { cookie, 'If-None-Match': etag } });
+  assert.equal(cached.status, 304);
+  assert.equal(await cached.text(), '');
+  assert.equal((await fetch(path, { headers: { 'If-None-Match': etag } })).status, 401);
+  await carla('/friends', 'POST', { target: bid, action: 'remove' });
+  assert.equal((await fetch(path, { headers: { cookie, 'If-None-Match': etag } })).status, 404);
+  const health = await fetch(base + '/healthz');
+  assert.equal(health.status, 200);
+  assert.deepEqual(await health.json(), { app: 'ph.ugnay.app', status: 'ok' });
+});

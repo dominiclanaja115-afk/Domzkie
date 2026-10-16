@@ -6,13 +6,16 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 : "${ANDROID_HOME:?Set ANDROID_HOME to your Android SDK}"
 : "${JAVA_HOME:?Set JAVA_HOME to JDK 17}"
+node scripts/verify-server.mjs
+APK_NAME="UgnayPH.apk"
+if [ "${UGNAY_BUILD_CHECK_ONLY:-0}" = "1" ]; then APK_NAME="UgnayPH-build-check.apk"; fi
 export PATH="$JAVA_HOME/bin:$PATH"
 TOOLS="$ANDROID_HOME/build-tools/35.0.0"
 PLATFORM="$ANDROID_HOME/platforms/android-35/android.jar"
 mkdir -p build/{classes,dex,gen}
 "$TOOLS/aapt2" compile --dir android/res -o build/resources.zip
 "$TOOLS/aapt2" link -o build/base.apk --manifest android/AndroidManifest.xml -I "$PLATFORM" --java build/gen build/resources.zip
-javac -source 8 -target 8 -classpath "$PLATFORM" -d build/classes android/src/ph/ugnay/MainActivity.java
+javac -source 8 -target 8 -classpath "$PLATFORM" -d build/classes android/src/ph/ugnay/MainActivity.java build/gen/ph/ugnay/ServerConfig.java
 jar cf build/classes.jar -C build/classes .
 "$TOOLS/d8" --lib "$PLATFORM" --min-api 26 --output build/dex build/classes.jar
 cp build/base.apk build/unsigned.apk
@@ -26,6 +29,6 @@ if [ ! -f "$KEYSTORE" ]; then
   keytool -genkeypair -keystore "$KEYSTORE" -alias ugnayph -keyalg RSA -keysize 3072 -validity 10000 -storepass "${UGNAY_STOREPASS:-android}" -keypass "${UGNAY_STOREPASS:-android}" -dname "CN=UgnayPH Development, O=Dominic R. Lanaja, C=PH"
 fi
 export UGNAY_STOREPASS="${UGNAY_STOREPASS:-android}"
-"$TOOLS/apksigner" sign --ks "$KEYSTORE" --ks-key-alias ugnayph --ks-pass env:UGNAY_STOREPASS --key-pass env:UGNAY_STOREPASS --out build/UgnayPH.apk build/aligned.apk
-"$TOOLS/apksigner" verify --verbose build/UgnayPH.apk
-"$TOOLS/aapt2" dump badging build/UgnayPH.apk
+"$TOOLS/apksigner" sign --ks "$KEYSTORE" --ks-key-alias ugnayph --ks-pass env:UGNAY_STOREPASS --key-pass env:UGNAY_STOREPASS --out "build/$APK_NAME" build/aligned.apk
+"$TOOLS/apksigner" verify --verbose "build/$APK_NAME"
+"$TOOLS/aapt2" dump badging "build/$APK_NAME"

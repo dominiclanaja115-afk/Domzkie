@@ -3,15 +3,17 @@
 **Created by: Dominic R. Lanaja**  
 **Copyright © 2026. All Rights Reserved.**
 
-Version 1.0 — Your Filipino Home Online. For Every Filipino, Everywhere.
+Version 1.1 (online update, deployment pending) — Your Filipino Home Online. For Every Filipino, Everywhere.
 
 A lightweight social application with an original Filipino visual identity, a Node.js/SQLite server, a responsive browser client, and an Android 8.0+ HTTPS client. No Facebook code, assets, or icon library is used.
 
 ## Delivery status
 
-The source and signed development APK are built. The backend integration suite passes. **A public server is not deployed or bundled into the APK.** On first launch, enter the HTTPS origin of your hosted UgnayPH server. The development preview uses synthetic demo accounts.
-
-The APK is development-signed and intended for installation and evaluation. Keep the signing key securely to produce compatible updates; it is deliberately excluded from this source archive. Before a public launch, establish production hosting, backups, moderation, identity verification and operational support. No claim is made of a measured sub-two-second startup on entry-level phones.
+Version 1.1 source removes manual server setup and adds encrypted local response caching.
+**Deployment is blocked until a hosting account or server is connected.** No live URL
+has been invented or embedded. The previous 1.0 APK is not the updated online release.
+See [DEPLOYMENT.md](DEPLOYMENT.md) for the one-time operator steps and release gates.
+App users will only install, sign up/sign in, and use the service; they never enter URLs.
 
 ## Start the web app / server
 
@@ -56,14 +58,17 @@ Caddy manages HTTPS certificates. Ensure its request body allowance is at least 
 
 The server does not trust forwarded IP headers. Its basic request rate limit therefore groups requests behind a proxy by socket address; tune this and add proxy-level rate controls before scaling beyond a small community. SQLite and synchronous password hashing suit an initial small deployment, not a large public network.
 
-## Install UgnayPH.apk
+## Install UgnayPH.apk (after the online release is published)
 
-1. Copy `UgnayPH.apk` to a phone running **Android 8.0 (API 26) or later**.
-2. Open the file and allow “Install unknown apps” for the file manager/browser if Android asks. Install, then turn that permission off again.
-3. Launch UgnayPH. Enter your server's HTTPS address, for example `https://community.example.org`.
-4. Sign up or sign in. Allow microphone access only if you want to record voice messages.
+1. Install the signed APK on Android 8.0 (API 26) or later, allowing installation from
+   your file manager only when prompted.
+2. Open UgnayPH. It connects to its embedded HTTPS backend automatically.
+3. Sign up or sign in. Allow microphone access when you want to record voice messages.
 
-Keep Android System WebView updated. No broad storage permission is requested: attachments use the system picker. Android downloads go to the app's external downloads directory, with a download notification. Use the app's top-right menu to reload or switch servers. Switching clears login cookies. A server must use a valid TLS certificate; HTTP and invalid certificates are not bypassed.
+Keep Android System WebView updated. The top-right menu provides Reload and About;
+there is no server-address form or server-switch menu. The developer credit stays visible.
+HTTPS certificate errors are never bypassed. Hosting must be completed before this
+version can be released; the older 1.0 APK still has its original server-entry screen.
 
 ## Build the APK
 
@@ -72,10 +77,11 @@ Requirements: JDK 17, Android SDK platform 35, build tools 35.0.0, `zip`. The na
 ```bash
 export JAVA_HOME=/path/to/jdk-17
 export ANDROID_HOME=/path/to/android-sdk
+export UGNAY_SERVER_URL=https://YOUR_ACTUAL_DEPLOYED_HOST
 bash scripts/build-apk.sh
 ```
 
-Output: `build/UgnayPH.apk`, package `ph.ugnay.app`, version name `1.0`, version code `1`, min SDK `26`, target SDK `35`. The script aligns the APK and verifies its v2/v3 signature.
+Output: `build/UgnayPH.apk`, package `ph.ugnay.app`, version name `1.1`, version code `2`, min SDK `26`, target SDK `35`. The script verifies the live backend before compiling, aligns the APK and verifies its v2/v3 signature. A missing URL blocks release builds; see DEPLOYMENT.md for compilation-only checks.
 
 By default, a development key is created at `$HOME/.ugnayph/signing.jks`, alias `ugnayph`, using a development password. For your own release, create a private key and set `UGNAY_KEYSTORE` and `UGNAY_STOREPASS` through a secure local environment. Do not commit or distribute private keys. The delivered APK's task-local development key is not in the source archive; a locally rebuilt APK with a different key cannot install over it.
 
@@ -102,10 +108,10 @@ By default, a development key is created at `$HOME/.ugnayph/signing.jks`, alias 
 
 Operational limits:
 
-- This is an initial self-hosted release, **not full production parity with Facebook Lite**. It has no moderation/report/block workflow, push delivery while closed, end-to-end encryption, email/SMS delivery, or verified email/phone ownership.
+- This version retains the initial social feature set. It has no moderation/report/block workflow, push delivery while closed, end-to-end encryption, email/SMS delivery, or verified email/phone ownership.
 - Recovery uses the private code rather than an emailed/SMS link. Losing both password and recovery code requires contacting the server operator; there is no insecure reset bypass.
 - Core navigation/forms are bilingual. User-generated posts remain in their original language; some help, validation and Android setup text remains English.
-- Chat and badges refresh every 15 seconds while visible. The app must be open and online; this version has no offline posting queue.
+- Chat and badges refresh every 15 seconds while visible. The app must be open and online; this version has no offline posting queue. Recent JSON responses are encrypted locally and reused only after server authorization and ETag validation; see DEPLOYMENT.md.
 - Photo uploads are resized to at most 960 px / JPEG quality 65% in Data Saver, or 1600 px / 85% otherwise. Images load lazily; videos never autoplay. Data Saver does not recompress previously stored attachments. Video/file uploads are limited to 8 MB, and accounts have a 100 MB attachment allowance. Orphaned uploads count toward this allowance until account deletion; automated media reclamation is not yet provided.
 - Stories disappear from all authorized endpoints after 24 hours, and their rows are cleaned periodically. Associated attachment bytes may remain until account deletion and are not visible to other users after expiry unless also attached to another accessible post or message.
 - People results are capped at 50, notifications at 100, and comments at the latest 100 per post. There are no large-community search/indexing guarantees.

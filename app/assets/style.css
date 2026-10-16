@@ -1856,3 +1856,29 @@ dialog::backdrop {
     font-size: 12px;
   }
 }
+
+/* Persistent developer credit on sign-in and every social screen. */
+.creator-credit {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 12;
+  padding: 5px 10px;
+  text-align: center;
+  background: #173e68;
+  color: white;
+  font-size: 11px;
+  line-height: 16px;
+}
+body {
+  padding-bottom: 26px;
+}
+@media (max-width: 700px) {
+  .mobile-nav {
+    bottom: 26px;
+  }
+  .content-grid {
+    padding-bottom: 120px;
+  }
+}

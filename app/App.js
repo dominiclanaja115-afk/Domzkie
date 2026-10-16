@@ -15,6 +15,8 @@ import {
   select
 } from '/ui.js';
 import * as screens from '/screens.js';
+import { createAccountCache, indexedDBStore } from '/cache.js';
+const responseCache = createAccountCache(indexedDBStore());
 const app = document.querySelector('#app'),
   modal = document.querySelector('#modal');
 const state = {
@@ -41,20 +43,38 @@ let authMode = 'login',
   recordStream,
   recordTimer;
 async function api(path, method = 'GET', data) {
+  const cacheable = method === 'GET' && !!state.me && path !== '/me' && path !== '/config';
+  const owner = state.me?.id;
+  // Always purge at authentication/account boundaries, including failed logout attempts.
+  if (method !== 'GET') await responseCache.clear();
+  const cached = cacheable ? await responseCache.get(path) : null;
+  const headers = data ? { 'Content-Type': 'application/json' } : {};
+  if (cached?.etag) headers['If-None-Match'] = cached.etag;
   const res = await fetch('/api' + path, {
     method,
-    headers: data ? { 'Content-Type': 'application/json' } : {},
+    headers,
     body: data ? JSON.stringify(data) : undefined,
-    credentials: 'same-origin'
+    credentials: 'same-origin',
+    cache: 'no-store'
   });
+  if (res.status === 304 && cached && state.me?.id === owner) return cached.value;
   const b = await res.json();
   if (!res.ok) {
+    // Never fall back to private data on network/auth/permission errors.
+    await responseCache.clear();
     if (res.status === 401 && state.me) {
       state.me = null;
       renderAuth();
     }
     throw new Error(b.error || 'Unable to connect.');
   }
+  if (b.user && (path === '/login' || path === '/signup' || path === '/me')) {
+    await responseCache.setAccount(b.user.id);
+  } else if (method !== 'GET' && state.me && !['/logout', '/account', '/reset'].includes(path)) {
+    await responseCache.setAccount(state.me.id);
+  }
+  if (cacheable && state.me?.id === owner)
+    await responseCache.put(path, res.headers.get('ETag'), b);
   return b;
 }
 function toast(message) {

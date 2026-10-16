@@ -169,7 +169,8 @@ async function api(req, res, url) {
       fail('Origin not allowed', 403);
   }
   limit(req.socket.remoteAddress + ':' + (auth?.id || 'guest'), auth ? 240 : 50);
-  if (path === '/config') return { demo: process.env.DEMO === '1', version: '1.0' };
+  if (path === '/config')
+    return { app: 'ph.ugnay.app', demo: process.env.DEMO === '1', version: '1.1' };
   const b = method === 'GET' ? {} : await body(req);
   if (path === '/signup' && method === 'POST') {
     const name = str(b.name, 80),
@@ -626,12 +627,29 @@ export const server = http.createServer(async (req, res) => {
   );
   try {
     const url = new URL(req.url, 'http://localhost');
+    if (url.pathname === '/healthz' && req.method === 'GET') {
+      db.prepare('SELECT 1').get();
+      res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
+      res.end(JSON.stringify({ app: 'ph.ugnay.app', status: 'ok' }));
+      return;
+    }
     if (url.pathname.startsWith('/api/')) {
       res.setHeader('Cache-Control', 'no-store');
       const result = await api(req, res, url);
       if (!res.writableEnded) {
+        const payload = JSON.stringify(result);
+        // api() authenticates and authorizes first, even for conditional requests.
+        const etag = '"' + hash(payload) + '"';
+        if (req.method === 'GET' && url.pathname !== '/api/config' && url.pathname !== '/api/me') {
+          res.setHeader('ETag', etag);
+          if (req.headers['if-none-match'] === etag) {
+            res.writeHead(304);
+            res.end();
+            return;
+          }
+        }
         res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(result));
+        res.end(payload);
       }
       return;
     }
@@ -639,6 +657,7 @@ export const server = http.createServer(async (req, res) => {
     const map = {
       '/': 'app/index.html',
       '/App.js': 'app/App.js',
+      '/cache.js': 'app/services/cache.js',
       '/style.css': 'app/assets/style.css',
       '/ui.js': 'app/components/ui.js',
       '/i18n.js': 'app/services/i18n.js',
@@ -655,7 +674,7 @@ export const server = http.createServer(async (req, res) => {
         '.css': 'text/css',
         '.svg': 'image/svg+xml'
       }[extname(file)],
-      'Cache-Control': 'no-cache'
+      'Cache-Control': url.pathname === '/' ? 'no-cache' : 'public, max-age=300'
     });
     res.end(content);
   } catch (e) {

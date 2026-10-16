@@ -1,0 +1,6 @@
+*
+!Dockerfile
+!package.json
+!app/
+!app/**
+app/assets/palawan.jpg

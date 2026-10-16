@@ -1,0 +1,72 @@
+# UgnayPH 1.1 — online release checklist
+
+Created by: Dominic R. Lanaja  
+Copyright © 2026. All Rights Reserved.
+
+## Current state
+
+The client no longer offers a server-address form or a change-server menu. A release
+build requires a live, verified HTTPS UgnayPH 1.1 backend. No production backend has
+been deployed yet: this task has no hosting account or server connection. The previous
+1.0 APK in Outputs is not the updated online release.
+
+## One-time operator deployment (never an app-user step)
+
+Use a Node 24 host or the supplied Dockerfile, with a **persistent volume** mounted at
+`/var/lib/ugnayph`. Run exactly one instance with this SQLite database. Hosting must
+provide HTTPS and an encrypted persistent disk and backups. The application hashes
+passwords and enforces per-request access controls; disk encryption is a host setting,
+not supplied by SQLite. Do not use an ephemeral filesystem or seed demo accounts.
+
+Set `PUBLIC_ORIGIN` to the exact assigned HTTPS origin, `SECURE_COOKIES=1`, and
+`DATA_DIR=/var/lib/ugnayph`. The process serves port 3000. Configure the host's reverse
+proxy and health check `/healthz`. Ensure the volume is writable by UID 1000 (node).
+Restrict direct HTTP access to the trusted reverse proxy. Use one production database;
+keep the development SQLite file and synthetic demo accounts out of deployment.
+
+1. Deploy the server and record its actual HTTPS URL.
+2. Verify health, signup, login, posting, friends-only access, and messaging between
+   two separate accounts/devices. Restart the server and verify data persisted.
+3. Embed the verified URL at build time:
+
+```bash
+export UGNAY_SERVER_URL=https://YOUR_ACTUAL_DEPLOYED_HOST
+export JAVA_HOME=/path/to/jdk17
+export ANDROID_HOME=/path/to/android-sdk
+bash scripts/build-apk.sh
+```
+
+The example host is not a usable server. The script rejects missing/invalid origins
+and checks `/healthz` and `/api/config` over TLS, refusing demo or incompatible servers.
+These public checks are a build gate; they do not replace the two-account/persistence
+checks above. No URL is requested from app users. Existing 1.0 server preferences are
+ignored. Use the same signing key to install this version over 1.0.
+
+`UGNAY_BUILD_CHECK_ONLY=1` compiles an explicitly named `UgnayPH-build-check.apk`
+against an unresolvable `.invalid` origin for compiler verification only. It is not a
+release, must not be distributed, and does not overwrite the last installable release.
+
+## Local caching and security
+
+- Recent feed, profile, connection, notification and conversation JSON is encrypted
+  with AES-256-GCM in the app origin's IndexedDB storage. Its Web Crypto key is
+  non-exportable and stored in the device's private origin storage. This is not Android
+  hardware-backed encryption or end-to-end encryption; protect the device with a lock.
+- Cache access starts only after fresh server authentication. Every cached response
+  must be reauthorized by the server and match its ETag before it is reused, saving
+  response bytes. Expired sessions and changed privacy controls never fall back to
+  cached private data. There is no offline send queue or offline private-data access.
+- Entries expire after 15 minutes, are bounded to 60 responses of at most 256 KB each,
+  and are purged on writes/account transitions, logout attempts, and API authorization
+  errors. If storage or encryption is unavailable, online functionality continues.
+- Public UI assets use a short HTTP cache. Media remains online-only with `no-store`;
+  uploaded photos/files are not persisted in the JSON cache. Explicit Android downloads
+  are separate user-requested files.
+- Developer credit remains visible in the Android toolbar and fixed web footer.
+
+## Remaining release verification
+
+Hosting access, a real HTTPS URL, encrypted persistent storage/backup configuration,
+restart persistence, cross-device communication and final APK network verification
+must be completed before publishing version 1.1. All previous social features are
+retained; the existing moderation/push/email-delivery limitations still apply.
