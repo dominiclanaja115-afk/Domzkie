@@ -41,10 +41,12 @@ export async function verifyServer(origin, request = fetch) {
 }
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const checkOnly = process.env.UGNAY_BUILD_CHECK_ONLY === '1';
-  const origin = serverOrigin(
-    checkOnly ? 'https://build-check.invalid' : process.env.UGNAY_SERVER_URL
-  );
-  if (!checkOnly) await verifyServer(origin);
+  const pending = process.env.UGNAY_PENDING_URL === '1';
+  if (pending && checkOnly) throw Error('Select either pending-URL or compilation-check mode.');
+  const origin = pending
+    ? ''
+    : serverOrigin(checkOnly ? 'https://build-check.invalid' : process.env.UGNAY_SERVER_URL);
+  if (!checkOnly && !pending) await verifyServer(origin);
   mkdirSync('build/gen/ph/ugnay', { recursive: true });
   writeFileSync(
     'build/gen/ph/ugnay/ServerConfig.java',
@@ -54,8 +56,10 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       '; }\n'
   );
   console.log(
-    checkOnly
-      ? 'Compilation check only: this APK cannot connect to a community.'
-      : 'Verified live backend: ' + origin
+    pending
+      ? 'Pending-URL preview: no network connection until the final APK is built.'
+      : checkOnly
+        ? 'Compilation check only: this APK cannot connect to a community.'
+        : 'Verified live backend: ' + origin
   );
 }

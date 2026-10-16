@@ -30,7 +30,7 @@ public class MainActivity extends Activity {
   getWindow().setStatusBarColor(Color.rgb(23,62,104));
   getWindow().setNavigationBarColor(Color.WHITE);
   getPreferences(0).edit().remove("server").apply();
-  connect(ServerConfig.ORIGIN);
+  if(ServerConfig.ORIGIN.isEmpty()) showPending(); else connect(ServerConfig.ORIGIN);
  }
  private LinearLayout base() {
   LinearLayout layout=new LinearLayout(this);layout.setOrientation(LinearLayout.VERTICAL);layout.setBackgroundColor(Color.WHITE);
@@ -38,6 +38,25 @@ public class MainActivity extends Activity {
   setContentView(layout);root=layout;return layout;
  }
  private TextView text(String value,int size,int color) {TextView t=new TextView(this);t.setText(value);t.setTextSize(size);t.setTextColor(color);t.setPadding(0,dp(9),0,dp(9));return t;}
+ private void showPending() {
+  LinearLayout outer=base();
+  ScrollView scroll=new ScrollView(this);
+  outer.addView(scroll,new LinearLayout.LayoutParams(-1,0,1));
+  LinearLayout content=new LinearLayout(this);
+  content.setOrientation(LinearLayout.VERTICAL);
+  content.setPadding(dp(28),dp(40),dp(28),dp(30));
+  scroll.addView(content);
+  content.addView(text("☀  UgnayPH",32,Color.rgb(23,62,104)));
+  content.addView(text("Your Filipino Home Online",22,Color.rgb(37,52,73)));
+  content.addView(text("Malapit na!",26,Color.rgb(23,62,104)));
+  content.addView(text("Our community is coming soon.\nAng ating komunidad ay malapit nang magbukas.",17,Color.rgb(100,118,136)));
+  content.addView(text("This preview is waiting for the online service. Install the final update to sign in, share posts, and send messages.",15,Color.rgb(100,118,136)));
+  TextView credit=text("Created by: Dominic R. Lanaja",13,Color.WHITE);
+  credit.setGravity(Gravity.CENTER);
+  credit.setPadding(dp(10),dp(15),dp(10),dp(15));
+  credit.setBackgroundColor(Color.rgb(23,62,104));
+  outer.addView(credit,new LinearLayout.LayoutParams(-1,-2));
+ }
  private boolean trusted(Uri uri) {
   Uri allowed=Uri.parse(origin);return "https".equals(uri.getScheme())&&allowed.getHost().equalsIgnoreCase(uri.getHost()==null?"":uri.getHost())&&(allowed.getPort()==-1?443:allowed.getPort())==(uri.getPort()==-1?443:uri.getPort())&&uri.getUserInfo()==null;
  }

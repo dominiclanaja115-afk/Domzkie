@@ -10,8 +10,9 @@ A lightweight social application with an original Filipino visual identity, a No
 ## Delivery status
 
 Version 1.1 source removes manual server setup and adds encrypted local response caching.
-**Deployment is blocked until a hosting account or server is connected.** No live URL
-has been invented or embedded. The previous 1.0 APK is not the updated online release.
+**The final online build is waiting for your deployed HTTPS URL.** The requested
+`UgnayPH-Pending-URL.apk` is installable and shows a coming-soon page with no URL
+entry. It requires a new final APK after deployment. No live URL is embedded. The previous 1.0 APK is not the updated online release.
 See [DEPLOYMENT.md](DEPLOYMENT.md) for the one-time operator steps and release gates.
 App users will only install, sign up/sign in, and use the service; they never enter URLs.
 
@@ -81,7 +82,7 @@ export UGNAY_SERVER_URL=https://YOUR_ACTUAL_DEPLOYED_HOST
 bash scripts/build-apk.sh
 ```
 
-Output: `build/UgnayPH.apk`, package `ph.ugnay.app`, version name `1.1`, version code `2`, min SDK `26`, target SDK `35`. The script verifies the live backend before compiling, aligns the APK and verifies its v2/v3 signature. A missing URL blocks release builds; see DEPLOYMENT.md for compilation-only checks.
+Output: `build/UgnayPH.apk`, package `ph.ugnay.app`, version name `1.1`, version code `3`, min SDK `26`, target SDK `35`. The script verifies the live backend before compiling, aligns the APK and verifies its v2/v3 signature. A missing URL blocks release builds; see DEPLOYMENT.md for compilation-only checks.
 
 By default, a development key is created at `$HOME/.ugnayph/signing.jks`, alias `ugnayph`, using a development password. For your own release, create a private key and set `UGNAY_KEYSTORE` and `UGNAY_STOREPASS` through a secure local environment. Do not commit or distribute private keys. The delivered APK's task-local development key is not in the source archive; a locally rebuilt APK with a different key cannot install over it.
 

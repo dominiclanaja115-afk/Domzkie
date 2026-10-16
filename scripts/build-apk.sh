@@ -9,6 +9,7 @@ cd "$(dirname "$0")/.."
 node scripts/verify-server.mjs
 APK_NAME="UgnayPH.apk"
 if [ "${UGNAY_BUILD_CHECK_ONLY:-0}" = "1" ]; then APK_NAME="UgnayPH-build-check.apk"; fi
+if [ "${UGNAY_PENDING_URL:-0}" = "1" ]; then APK_NAME="UgnayPH-Pending-URL.apk"; fi
 export PATH="$JAVA_HOME/bin:$PATH"
 TOOLS="$ANDROID_HOME/build-tools/35.0.0"
 PLATFORM="$ANDROID_HOME/platforms/android-35/android.jar"

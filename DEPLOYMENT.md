@@ -6,8 +6,8 @@ Copyright © 2026. All Rights Reserved.
 ## Current state
 
 The client no longer offers a server-address form or a change-server menu. A release
-build requires a live, verified HTTPS UgnayPH 1.1 backend. No production backend has
-been deployed yet: this task has no hosting account or server connection. The previous
+build requires a live, verified HTTPS UgnayPH 1.1 backend. The user will deploy the supplied server and send the live HTTPS URL. The
+requested pending-URL APK can be installed before that final build. The previous
 1.0 APK in Outputs is not the updated online release.
 
 ## One-time operator deployment (never an app-user step)
@@ -70,3 +70,13 @@ Hosting access, a real HTTPS URL, encrypted persistent storage/backup configurat
 restart persistence, cross-device communication and final APK network verification
 must be completed before publishing version 1.1. All previous social features are
 retained; the existing moderation/push/email-delivery limitations still apply.
+
+## Requested preview before deployment
+
+The developer can build an installable preview with `UGNAY_PENDING_URL=1 bash
+scripts/build-apk.sh` (with JAVA_HOME and ANDROID_HOME configured). It produces
+`build/UgnayPH-Pending-URL.apk`, a coming-soon page with persistent developer credit,
+no address-entry form and no network requests. This is intentionally supplied for
+installation before the URL exists. It requires a new final APK after the actual
+server is deployed. Normal release builds still require live HTTPS verification.
+See SERVER-UPLOAD.md for the server handoff.

@@ -25,4 +25,17 @@ Copyright © 2026. All Rights Reserved.
 - Measured startup time or performance on an entry-level Android device.
 - Background push notifications, production moderation and email/SMS verification are not implemented.
 
-The existing 1.0 APK is unchanged. No version 1.1 release APK has been published. Read DEPLOYMENT.md for hosting, local caching, and remaining release gates.
+The existing 1.0 APK is unchanged. An installable version 1.1 pending-URL preview
+(code 3) is now supplied; it shows a native coming-soon page. The signed APK build
+and deployment-mode tests passed. The complete extracted server upload was smoke
+tested for startup, health, all web assets, two-account signup and messaging.
+The final connected version still requires the user’s live HTTPS URL. Read DEPLOYMENT.md for hosting, local caching, and remaining release gates.
+
+## Pending-URL handoff
+
+The pending-URL build mode has three passing deployment tests (origin checks,
+live-backend gate, and pending configuration/release-mode separation). The signed
+APK uses the same certificate as version 1.0, supports Android 8.0+, and contains
+no endpoint in pending mode. Server code is unchanged from the earlier 19-test
+validation; an extracted upload archive additionally passed a fresh process
+startup, all web asset requests, signup and message delivery between two accounts.

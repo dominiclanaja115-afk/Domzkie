@@ -44,3 +44,39 @@ test('live backend gate rejects demo, incompatible, unhealthy and network failur
     })
   );
 });
+
+test('pending preview generates no endpoint and ordinary builds still require a live URL', async () => {
+  const { mkdtempSync, readFileSync, rmSync } = await import('node:fs');
+  const { tmpdir } = await import('node:os');
+  const { join } = await import('node:path');
+  const { spawnSync } = await import('node:child_process');
+  const script = new URL('../scripts/verify-server.mjs', import.meta.url);
+  const cwd = mkdtempSync(join(tmpdir(), 'ugnay-pending-'));
+  const env = { ...process.env };
+  delete env.UGNAY_SERVER_URL;
+  delete env.UGNAY_BUILD_CHECK_ONLY;
+  delete env.UGNAY_PENDING_URL;
+  try {
+    const pending = spawnSync(process.execPath, [script.pathname], {
+      cwd,
+      env: { ...env, UGNAY_PENDING_URL: '1' },
+      encoding: 'utf8'
+    });
+    assert.equal(pending.status, 0, pending.stderr);
+    assert.match(
+      readFileSync(join(cwd, 'build/gen/ph/ugnay/ServerConfig.java'), 'utf8'),
+      /ORIGIN = "";/
+    );
+    const release = spawnSync(process.execPath, [script.pathname], { cwd, env, encoding: 'utf8' });
+    assert.equal(release.status, 1);
+    assert.match(release.stderr, /UGNAY_SERVER_URL must be/);
+    const conflicting = spawnSync(process.execPath, [script.pathname], {
+      cwd,
+      env: { ...env, UGNAY_PENDING_URL: '1', UGNAY_BUILD_CHECK_ONLY: '1' },
+      encoding: 'utf8'
+    });
+    assert.equal(conflicting.status, 1);
+  } finally {
+    rmSync(cwd, { recursive: true });
+  }
+});
